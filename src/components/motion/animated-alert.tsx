@@ -29,7 +29,10 @@ export function AnimatedAlert({
           }}
           className="overflow-hidden"
         >
-          <Alert variant={variant}>
+          <Alert
+            variant={variant}
+            role={variant === "destructive" ? "alert" : "status"}
+          >
             {title ? <AlertTitle>{title}</AlertTitle> : null}
             <AlertDescription>{message}</AlertDescription>
           </Alert>

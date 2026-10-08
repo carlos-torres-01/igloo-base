@@ -16,8 +16,9 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { logoutAction } from "@/features/auth/actions"
+import type { UserRole } from "@/types/profiles"
 
-export function AppSidebar({ role }: { role: string }) {
+export function AppSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
   const navigation = [{ href: "/inicio", label: "Inicio", icon: House }]
   if (role === "admin")
@@ -27,7 +28,7 @@ export function AppSidebar({ role }: { role: string }) {
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
         <Link href="/inicio" aria-label="Igloo">
           <BrandLogo className="group-data-[collapsible=icon]:hidden" />
-          <span className="hidden text-2xl font-black text-[#ff003d] group-data-[collapsible=icon]:block">
+          <span className="hidden text-2xl font-black text-foreground group-data-[collapsible=icon]:block">
             i
           </span>
         </Link>
@@ -41,6 +42,9 @@ export function AppSidebar({ role }: { role: string }) {
                   <SidebarMenuButton
                     render={<Link href={item.href} />}
                     isActive={pathname.startsWith(item.href)}
+                    aria-current={
+                      pathname.startsWith(item.href) ? "page" : undefined
+                    }
                     tooltip={item.label}
                   >
                     <item.icon />
@@ -55,6 +59,8 @@ export function AppSidebar({ role }: { role: string }) {
       <SidebarFooter className="p-3">
         <Link
           href="/cuenta"
+          aria-label="Mi cuenta"
+          aria-current={pathname === "/cuenta" ? "page" : undefined}
           className={buttonVariants({
             variant: "ghost",
             className: "w-full justify-start",
@@ -68,6 +74,7 @@ export function AppSidebar({ role }: { role: string }) {
         <form action={logoutAction}>
           <Button
             type="submit"
+            aria-label="Cerrar sesión"
             variant="ghost"
             className="w-full justify-start"
           >

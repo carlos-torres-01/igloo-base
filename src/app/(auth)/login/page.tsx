@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { BrandLogo } from "@/components/brand-logo"
@@ -7,6 +8,7 @@ import { Reveal } from "@/components/motion/reveal"
 import { RouteTransition } from "@/components/motion/route-transition"
 import { motionDuration } from "@/components/motion/transitions"
 import { LoginForm } from "@/features/auth/login-form"
+import { createClient } from "@/lib/supabase/server"
 
 export const metadata: Metadata = { title: "Ingresar" }
 
@@ -16,10 +18,19 @@ export default async function LoginPage({
   searchParams: Promise<{ error?: string }>
 }) {
   const { error } = await searchParams
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (user) redirect("/inicio")
 
   return (
     <main className="grid min-h-svh place-items-center px-6 py-12">
-      <RouteTransition enter={false} exitDuration={motionDuration.feedback}>
+      <RouteTransition
+        enter={false}
+        exitDuration={motionDuration.feedback}
+        className="w-full max-w-sm"
+      >
         <div className="w-full max-w-sm space-y-8">
           <Reveal delay={0.04}>
             <Link

@@ -8,7 +8,7 @@ const labels: Record<string, string> = {
   replaced: "Reemplazado",
   cancelled: "Anulado",
   correcting: "Corrección",
-  inactive: "Inactiva",
+  inactive: "Inactivo",
 }
 
 export function StatusBadge({ status }: { status: string }) {

@@ -1,13 +1,12 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { KeyRound, Mail } from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { useTransitionRouter } from "@/components/motion/route-transition"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 
 export function LoginForm({ initialError }: { initialError?: string }) {
   const router = useTransitionRouter()
@@ -52,41 +51,38 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       method="post"
       onSubmit={handleSubmit}
       aria-busy={pending}
-      className="space-y-5"
+      className="flex flex-col gap-5"
     >
       <AnimatedAlert message={error} variant="destructive" />
 
-      <div className="space-y-2">
-        <Label htmlFor="email">
-          <Mail className="size-3.5 text-muted-foreground" aria-hidden="true" />
-          Correo
-        </Label>
-        <Input
-          id="email"
-          type="email"
-          name="email"
-          autoComplete="email"
-          placeholder="nombre@empresa.com"
-          required
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="password">
-          <KeyRound
-            className="size-3.5 text-muted-foreground"
-            aria-hidden="true"
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="email">Correo</FieldLabel>
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            spellCheck={false}
+            disabled={pending}
+            placeholder="nombre@empresa.com"
+            required
           />
-          Contraseña
-        </Label>
-        <Input
-          id="password"
-          type="password"
-          name="password"
-          autoComplete="current-password"
-          required
-        />
-      </div>
+        </Field>
+
+        <Field>
+          <FieldLabel htmlFor="password">Contraseña</FieldLabel>
+          <Input
+            id="password"
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            maxLength={128}
+            disabled={pending}
+            required
+          />
+        </Field>
+      </FieldGroup>
 
       <Button type="submit" className="w-full" disabled={pending}>
         {pending ? "Ingresando…" : "Ingresar"}

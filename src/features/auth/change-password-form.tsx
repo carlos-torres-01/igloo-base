@@ -5,7 +5,7 @@ import { useState, useTransition, type FormEvent } from "react"
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { changePasswordAction } from "@/features/auth/change-password-action"
 
 export function ChangePasswordForm() {
@@ -15,6 +15,8 @@ export function ChangePasswordForm() {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (pending) return
+    setMessage(undefined)
     const form = event.currentTarget
     const values = new FormData(form)
     const password = String(values.get("password") ?? "")
@@ -36,18 +38,46 @@ export function ChangePasswordForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="max-w-md space-y-5">
+    <form
+      onSubmit={onSubmit}
+      aria-busy={pending}
+      className="flex max-w-md flex-col gap-5"
+    >
       <AnimatedAlert message={error} variant="destructive" />
       <AnimatedAlert message={message} />
-      <div className="space-y-2">
-        <Label htmlFor="new-password">Nueva contraseña</Label>
-        <Input id="new-password" name="password" type="password" autoComplete="new-password" minLength={12} required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="confirm-password">Confirmar contraseña</Label>
-        <Input id="confirm-password" name="confirmation" type="password" autoComplete="new-password" minLength={12} required />
-      </div>
-      <Button type="submit" disabled={pending}>{pending ? "Guardando…" : "Cambiar contraseña"}</Button>
+      <FieldGroup>
+        <Field>
+          <FieldLabel htmlFor="new-password">Nueva contraseña</FieldLabel>
+          <Input
+            id="new-password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            minLength={12}
+            maxLength={128}
+            disabled={pending}
+            required
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor="confirm-password">
+            Confirmar contraseña
+          </FieldLabel>
+          <Input
+            id="confirm-password"
+            name="confirmation"
+            type="password"
+            autoComplete="new-password"
+            minLength={12}
+            maxLength={128}
+            disabled={pending}
+            required
+          />
+        </Field>
+      </FieldGroup>
+      <Button type="submit" disabled={pending}>
+        {pending ? "Guardando…" : "Cambiar contraseña"}
+      </Button>
     </form>
   )
 }

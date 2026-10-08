@@ -1,11 +1,5 @@
 import type { Metadata } from "next"
-import {
-  BadgeCheck,
-  Mail,
-  MousePointerClick,
-  ShieldCheck,
-  UsersRound,
-} from "lucide-react"
+import { UsersRound } from "lucide-react"
 import { EmptyState } from "@/components/empty-state"
 import { PageHeader } from "@/components/page-header"
 import { StatusBadge } from "@/components/status-badge"
@@ -20,18 +14,27 @@ import {
 } from "@/components/ui/table"
 import { CreateUserDialog } from "@/features/users/create-user-dialog"
 import { EditUserDialog } from "@/features/users/edit-user-dialog"
-import { requireAdmin } from "@/lib/auth"
+import { getUsersPage } from "@/features/users/queries"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 export const metadata: Metadata = { title: "Usuarios" }
-export default async function UsersPage() {
-  const { supabase, user } = await requireAdmin()
-  const { data: profiles, error } = await supabase
-    .from("profiles")
-    .select("id, full_name, email, role, is_active")
-    .order("full_name")
-  if (error) throw new Error(error.message)
+export default async function UsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}) {
+  const params = await searchParams
+  const { profiles, currentUserId, page, totalPages } = await getUsersPage(
+    params.page
+  )
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       <PageHeader
         eyebrow="Administración"
         title="Usuarios"
@@ -48,21 +51,11 @@ export default async function UsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>
-                <UsersRound className="inline size-3.5" /> Usuario
-              </TableHead>
-              <TableHead>
-                <Mail className="inline size-3.5" /> Correo
-              </TableHead>
-              <TableHead>
-                <ShieldCheck className="inline size-3.5" /> Rol
-              </TableHead>
-              <TableHead>
-                <BadgeCheck className="inline size-3.5" /> Estado
-              </TableHead>
-              <TableHead className="text-right">
-                <MousePointerClick className="inline size-3.5" /> Acción
-              </TableHead>
+              <TableHead>Usuario</TableHead>
+              <TableHead>Correo</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="text-right">Acción</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -70,7 +63,7 @@ export default async function UsersPage() {
               <TableRow key={profile.id}>
                 <TableCell className="font-medium">
                   {profile.full_name || "Sin nombre"}
-                  {profile.id === user.id ? (
+                  {profile.id === currentUserId ? (
                     <span className="ml-2 text-xs text-muted-foreground">
                       Tú
                     </span>
@@ -92,7 +85,7 @@ export default async function UsersPage() {
                 <TableCell className="text-right">
                   <EditUserDialog
                     profile={profile}
-                    isCurrentUser={profile.id === user.id}
+                    isCurrentUser={profile.id === currentUserId}
                   />
                 </TableCell>
               </TableRow>
@@ -100,6 +93,35 @@ export default async function UsersPage() {
           </TableBody>
         </Table>
       )}
+      {totalPages > 1 ? (
+        <Pagination aria-label="Páginas de usuarios">
+          <PaginationContent>
+            {page > 1 ? (
+              <PaginationItem>
+                <PaginationPrevious
+                  href={`/usuarios?page=${page - 1}`}
+                  text="Anterior"
+                  aria-label="Página anterior"
+                />
+              </PaginationItem>
+            ) : null}
+            <PaginationItem>
+              <span className="px-3 text-sm text-muted-foreground">
+                Página {page} de {totalPages}
+              </span>
+            </PaginationItem>
+            {page < totalPages ? (
+              <PaginationItem>
+                <PaginationNext
+                  href={`/usuarios?page=${page + 1}`}
+                  text="Siguiente"
+                  aria-label="Página siguiente"
+                />
+              </PaginationItem>
+            ) : null}
+          </PaginationContent>
+        </Pagination>
+      ) : null}
     </div>
   )
 }

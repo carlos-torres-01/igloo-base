@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil, UserRound } from "lucide-react"
+import { Pencil } from "lucide-react"
 
 import { IconTooltip } from "@/components/icon-tooltip"
 import { AnimatedAlert } from "@/components/motion/animated-alert"
@@ -17,29 +17,24 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { updateUserAction } from "@/features/users/actions"
 
-type UserRole = "admin" | "user"
+import type { UserRole, UserProfile } from "@/types/profiles"
 
 export function EditUserDialog({
   profile,
   isCurrentUser,
 }: {
-  profile: {
-    id: string
-    full_name: string | null
-    email: string
-    role: string
-    is_active: boolean
-  }
+  profile: UserProfile
 
   isCurrentUser: boolean
 }) {
@@ -49,16 +44,17 @@ export function EditUserDialog({
   const [error, setError] = useState<string>()
   const [confirming, setConfirming] = useState(false)
   const [fullName, setFullName] = useState(profile.full_name ?? "")
-  const [role, setRole] = useState<UserRole>(profile.role as UserRole)
+  const [role, setRole] = useState<UserRole>(profile.role)
   const [isActive, setIsActive] = useState(profile.is_active)
 
   function onOpenChange(nextOpen: boolean) {
+    if (pending) return
     setOpen(nextOpen)
-    if (!nextOpen) {
+    if (nextOpen) {
       setError(undefined)
       setConfirming(false)
       setFullName(profile.full_name ?? "")
-      setRole(profile.role as UserRole)
+      setRole(profile.role)
       setIsActive(profile.is_active)
     }
   }
@@ -70,6 +66,7 @@ export function EditUserDialog({
   }
 
   function save() {
+    if (pending) return
     startTransition(async () => {
       const result = await updateUserAction({
         userId: profile.id,
@@ -82,7 +79,7 @@ export function EditUserDialog({
         setConfirming(false)
         return
       }
-      onOpenChange(false)
+      setOpen(false)
       router.refresh()
     })
   }
@@ -104,7 +101,7 @@ export function EditUserDialog({
       </IconTooltip>
       <DialogContent>
         {confirming ? (
-          <div className="space-y-5">
+          <div aria-busy={pending} className="flex flex-col gap-5">
             <DialogHeader>
               <DialogTitle>Confirmar cambios de acceso</DialogTitle>
               <DialogDescription>
@@ -134,66 +131,76 @@ export function EditUserDialog({
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form onSubmit={onSubmit} className="flex flex-col gap-5">
             <DialogHeader>
               <DialogTitle>Editar usuario</DialogTitle>
               <DialogDescription>{profile.email}</DialogDescription>
             </DialogHeader>
             <AnimatedAlert message={error} variant="destructive" />
-            <div className="space-y-2">
-              <Label htmlFor={`name-${profile.id}`}>
-                <UserRound className="size-3.5 text-muted-foreground" /> Nombre
-              </Label>
-              <Input
-                id={`name-${profile.id}`}
-                value={fullName}
-                onChange={(event) => setFullName(event.target.value)}
-                minLength={2}
-                maxLength={120}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Rol</Label>
-              <Select
-                value={role}
-                onValueChange={(value) => {
-                  if (value === "admin" || value === "user") setRole(value)
-                }}
-                disabled={isCurrentUser}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {role === "admin" ? "Administrador" : "Usuario"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                  <SelectItem value="user">Usuario</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select
-                value={isActive ? "active" : "inactive"}
-                onValueChange={(value) => setIsActive(value === "active")}
-                disabled={isCurrentUser}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>{isActive ? "Activo" : "Inactivo"}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Activo</SelectItem>
-                  <SelectItem value="inactive">Inactivo</SelectItem>
-                </SelectContent>
-              </Select>
-              {isCurrentUser ? (
-                <p className="text-xs text-muted-foreground">
-                  No puedes cambiar tu propio rol ni desactivar tu cuenta.
-                </p>
-              ) : null}
-            </div>
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor={`name-${profile.id}`}>Nombre</FieldLabel>
+                <Input
+                  id={`name-${profile.id}`}
+                  name="fullName"
+                  autoComplete="name"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  minLength={2}
+                  maxLength={120}
+                  required
+                />
+              </Field>
+              <Field data-disabled={isCurrentUser}>
+                <FieldLabel htmlFor={`role-${profile.id}`}>Rol</FieldLabel>
+                <Select
+                  value={role}
+                  name="role"
+                  onValueChange={(value) => {
+                    if (value === "admin" || value === "user") setRole(value)
+                  }}
+                  disabled={isCurrentUser}
+                >
+                  <SelectTrigger id={`role-${profile.id}`} className="w-full">
+                    <SelectValue>
+                      {role === "admin" ? "Administrador" : "Usuario"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="admin">Administrador</SelectItem>
+                      <SelectItem value="user">Usuario</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field data-disabled={isCurrentUser}>
+                <FieldLabel htmlFor={`status-${profile.id}`}>Estado</FieldLabel>
+                <Select
+                  value={isActive ? "active" : "inactive"}
+                  name="status"
+                  onValueChange={(value) => setIsActive(value === "active")}
+                  disabled={isCurrentUser}
+                >
+                  <SelectTrigger id={`status-${profile.id}`} className="w-full">
+                    <SelectValue>
+                      {isActive ? "Activo" : "Inactivo"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="active">Activo</SelectItem>
+                      <SelectItem value="inactive">Inactivo</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {isCurrentUser ? (
+                  <p className="text-xs text-muted-foreground">
+                    No puedes cambiar tu propio rol ni desactivar tu cuenta.
+                  </p>
+                ) : null}
+              </Field>
+            </FieldGroup>
             <DialogFooter>
               <Button type="submit">Guardar cambios</Button>
             </DialogFooter>

@@ -1,5 +1,13 @@
 import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 
 export function EmptyState({
   icon: Icon,
@@ -13,13 +21,15 @@ export function EmptyState({
   action?: ReactNode
 }) {
   return (
-    <div className="flex min-h-64 flex-col items-center justify-center gap-3 py-12 text-center">
-      <Icon className="size-8 text-muted-foreground" strokeWidth={1.5} />
-      <div className="space-y-1">
-        <p className="font-medium">{title}</p>
-        <p className="max-w-sm text-sm text-muted-foreground">{description}</p>
-      </div>
-      {action}
-    </div>
+    <Empty className="min-h-64">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <Icon aria-hidden="true" />
+        </EmptyMedia>
+        <EmptyTitle>{title}</EmptyTitle>
+        <EmptyDescription>{description}</EmptyDescription>
+      </EmptyHeader>
+      {action ? <EmptyContent>{action}</EmptyContent> : null}
+    </Empty>
   )
 }

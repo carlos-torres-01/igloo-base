@@ -2,16 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import {
-  Check,
-  Copy,
-  Eye,
-  EyeOff,
-  Mail,
-  Plus,
-  RefreshCw,
-  UserRound,
-} from "lucide-react"
+import { Check, Copy, Eye, EyeOff, Plus, RefreshCw } from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { Button } from "@/components/ui/button"
@@ -25,10 +16,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -36,7 +29,7 @@ import {
 import { createUserAction } from "@/features/users/actions"
 import { generatePassword } from "@/lib/security/password"
 
-type UserRole = "admin" | "user"
+import type { UserRole } from "@/types/profiles"
 
 export function CreateUserDialog() {
   const router = useRouter()
@@ -51,6 +44,7 @@ export function CreateUserDialog() {
   const [copied, setCopied] = useState(false)
 
   function onOpenChange(nextOpen: boolean) {
+    if (pending) return
     setOpen(nextOpen)
     if (!nextOpen) {
       if (createdEmail) router.refresh()
@@ -66,6 +60,7 @@ export function CreateUserDialog() {
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (pending) return
     if (role === "admin" && !adminConfirmed) {
       setError(
         "Confirma que el nuevo usuario tendrá acceso administrativo completo."
@@ -106,11 +101,11 @@ export function CreateUserDialog() {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger render={<Button size="sm" />}>
-        <Plus /> Nuevo usuario
+        <Plus data-icon="inline-start" /> Nuevo usuario
       </DialogTrigger>
       <DialogContent>
         {createdEmail ? (
-          <div className="space-y-5">
+          <div className="flex flex-col gap-5">
             <DialogHeader>
               <DialogTitle>Usuario creado</DialogTitle>
               <DialogDescription>
@@ -119,8 +114,10 @@ export function CreateUserDialog() {
               </DialogDescription>
             </DialogHeader>
             <AnimatedAlert message={error} variant="destructive" />
-            <div className="space-y-2">
-              <Label htmlFor="created-password">Contraseña inicial</Label>
+            <Field>
+              <FieldLabel htmlFor="created-password">
+                Contraseña inicial
+              </FieldLabel>
               <div className="flex gap-2">
                 <Input
                   id="created-password"
@@ -141,7 +138,7 @@ export function CreateUserDialog() {
                 Compártela por un canal seguro. El usuario puede cambiarla en Mi
                 cuenta.
               </p>
-            </div>
+            </Field>
             <DialogFooter>
               <Button type="button" onClick={() => onOpenChange(false)}>
                 Listo
@@ -149,7 +146,11 @@ export function CreateUserDialog() {
             </DialogFooter>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="space-y-5">
+          <form
+            onSubmit={onSubmit}
+            aria-busy={pending}
+            className="flex flex-col gap-5"
+          >
             <DialogHeader>
               <DialogTitle>Nuevo usuario</DialogTitle>
               <DialogDescription>
@@ -157,101 +158,113 @@ export function CreateUserDialog() {
               </DialogDescription>
             </DialogHeader>
             <AnimatedAlert message={error} variant="destructive" />
-            <div className="space-y-2">
-              <Label htmlFor="user-name">
-                <UserRound className="size-3.5 text-muted-foreground" /> Nombre
-              </Label>
-              <Input
-                id="user-name"
-                name="fullName"
-                required
-                minLength={2}
-                maxLength={120}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="user-email">
-                <Mail className="size-3.5 text-muted-foreground" /> Correo
-              </Label>
-              <Input
-                id="user-email"
-                name="email"
-                type="email"
-                autoComplete="off"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Rol</Label>
-              <Select
-                value={role}
-                onValueChange={(value) => {
-                  if (value === "admin" || value === "user") {
-                    setRole(value)
-                    setAdminConfirmed(false)
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {role === "admin" ? "Administrador" : "Usuario"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">Usuario</SelectItem>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-              {role === "admin" ? (
-                <label className="flex cursor-pointer items-start gap-2 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={adminConfirmed}
-                    onChange={(event) =>
-                      setAdminConfirmed(event.target.checked)
-                    }
-                    className="mt-0.5 size-4 accent-foreground"
+            <FieldSet disabled={pending}>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="user-name">Nombre</FieldLabel>
+                  <Input
+                    id="user-name"
+                    name="fullName"
+                    autoComplete="name"
+                    required
+                    minLength={2}
+                    maxLength={120}
                   />
-                  Confirmo que tendrá acceso a la gestión de usuarios.
-                </label>
-              ) : null}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="user-password">Contraseña inicial</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="user-password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  autoComplete="new-password"
-                  minLength={12}
-                  required
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label={
-                    showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
-                  }
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff /> : <Eye />}
-                </Button>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setPassword(generatePassword())
-                  setShowPassword(true)
-                }}
-              >
-                <RefreshCw /> Generar contraseña
-              </Button>
-            </div>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="user-email">Correo</FieldLabel>
+                  <Input
+                    id="user-email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    spellCheck={false}
+                    required
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="user-role">Rol</FieldLabel>
+                  <Select
+                    value={role}
+                    name="role"
+                    disabled={pending}
+                    onValueChange={(value) => {
+                      if (value === "admin" || value === "user") {
+                        setRole(value)
+                        setAdminConfirmed(false)
+                      }
+                    }}
+                  >
+                    <SelectTrigger id="user-role" className="w-full">
+                      <SelectValue>
+                        {role === "admin" ? "Administrador" : "Usuario"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="user">Usuario</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  {role === "admin" ? (
+                    <Field orientation="horizontal">
+                      <Checkbox
+                        id="confirm-admin"
+                        checked={adminConfirmed}
+                        onCheckedChange={setAdminConfirmed}
+                        disabled={pending}
+                      />
+                      <FieldLabel htmlFor="confirm-admin">
+                        Confirmo que tendrá acceso a la gestión de usuarios.
+                      </FieldLabel>
+                    </Field>
+                  ) : null}
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="user-password">
+                    Contraseña inicial
+                  </FieldLabel>
+                  <div className="flex gap-2">
+                    <Input
+                      id="user-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      autoComplete="new-password"
+                      minLength={12}
+                      maxLength={128}
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label={
+                        showPassword
+                          ? "Ocultar contraseña"
+                          : "Mostrar contraseña"
+                      }
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setPassword(generatePassword())
+                      setShowPassword(true)
+                    }}
+                  >
+                    <RefreshCw data-icon="inline-start" /> Generar contraseña
+                  </Button>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
             <DialogFooter>
               <Button type="submit" disabled={pending}>
                 {pending ? "Creando…" : "Crear usuario"}

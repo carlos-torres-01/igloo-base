@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -12,6 +11,7 @@ import {
 } from "react"
 import { motion, useAnimationControls, useReducedMotion } from "motion/react"
 import { usePathname, useRouter } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 import {
   exitEase,
@@ -33,11 +33,13 @@ const exitState = { opacity: 0, y: -6 }
 
 export function RouteTransition({
   children,
+  className,
   enter = true,
   enterOnMount = true,
   exitDuration = motionDuration.exit,
 }: {
   children: ReactNode
+  className?: string
   enter?: boolean
   enterOnMount?: boolean
   exitDuration?: number
@@ -91,64 +93,21 @@ export function RouteTransition({
 
   const push = useCallback(
     async (href: string) => {
+      // Search parameters and hashes can change without a pathname change.
+      // Keep content visible when Next.js reuses the current route.
+      if (new URL(href, window.location.href).pathname === pathname) {
+        nextRouter.push(href)
+        return
+      }
       if (!(await animateOut())) return
       nextRouter.push(href)
     },
-    [animateOut, nextRouter]
+    [animateOut, nextRouter, pathname]
   )
 
   const back = useCallback(async () => {
-    if (!(await animateOut())) return
     nextRouter.back()
-  }, [animateOut, nextRouter])
-
-  useEffect(() => {
-    function handleInternalLink(event: MouseEvent) {
-      if (
-        event.defaultPrevented ||
-        event.button !== 0 ||
-        event.metaKey ||
-        event.ctrlKey ||
-        event.shiftKey ||
-        event.altKey
-      ) {
-        return
-      }
-
-      const target = event.target
-      if (!(target instanceof Element)) return
-
-      const anchor = target.closest<HTMLAnchorElement>("a[href]")
-      if (
-        !anchor ||
-        anchor.target === "_blank" ||
-        anchor.hasAttribute("download") ||
-        anchor.dataset.pageTransition === "none"
-      ) {
-        return
-      }
-
-      const destination = new URL(anchor.href, window.location.href)
-      const current = new URL(window.location.href)
-
-      if (
-        destination.origin !== current.origin ||
-        (destination.pathname === current.pathname &&
-          destination.search === current.search)
-      ) {
-        return
-      }
-
-      event.preventDefault()
-      event.stopPropagation()
-      void push(
-        `${destination.pathname}${destination.search}${destination.hash}`
-      )
-    }
-
-    document.addEventListener("click", handleInternalLink, true)
-    return () => document.removeEventListener("click", handleInternalLink, true)
-  }, [push])
+  }, [nextRouter])
 
   const router = useMemo<TransitionRouter>(
     () => ({ back, push, refresh: nextRouter.refresh }),
@@ -158,7 +117,7 @@ export function RouteTransition({
   return (
     <TransitionRouterContext.Provider value={router}>
       <motion.div
-        className="min-w-0"
+        className={cn("min-w-0", className)}
         initial={
           reduceMotion || !enter || !enterOnMount ? visibleState : enterState
         }
