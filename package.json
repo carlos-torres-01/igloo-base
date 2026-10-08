@@ -19,7 +19,7 @@
   },
   "knip": {
     "ignore": [
-      "components/ui/**"
+      "src/components/ui/**"
     ],
     "ignoreDependencies": [
       "supabase"

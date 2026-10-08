@@ -60,6 +60,26 @@ Este archivo define cómo desarrollar esta aplicación. El objetivo es una inter
 - Evita duplicar lógica, tipos y estilos. Nombra archivos y funciones según su responsabilidad. Extrae una abstracción cuando exista reutilización real, no antes.
 - Para cambios de datos, añade una migración de Supabase y define permisos con RLS. Protege rutas y acciones con las comprobaciones de acceso existentes; ocultar un botón no es autorización. Nunca envíes credenciales de servicio al navegador.
 
+## Consultas, autenticación y Supabase
+
+- Las lecturas de una función viven en `src/features/<nombre>/queries.ts` con `import "server-only"`; las escrituras en `actions.ts` con `"use server"`. Autoriza dentro de cada entrada con `requireUser` o `requireAdmin`, aunque el layout ya lo haga.
+- Usa el cliente de sesión de `src/lib/supabase/server.ts` para consultas y RPC sujetos a RLS. Reserva `createAdminClient` para operaciones de Auth que necesiten privilegios, después de comprobar el administrador; no lo uses para evitar un error de permisos.
+- Los clientes usan el contrato `Database` de `src/types/database.ts`. Los tipos compartidos de perfil y rol están en `src/types/profiles.ts`. Al cambiar el esquema, regenera el contrato desde Supabase y comprueba TypeScript. No sustituyas errores de tipos con `any` ni fuerces resultados con casts.
+- Selecciona columnas explícitas, aplica filtros y pagina las listas en el servidor con un orden estable. Distingue un resultado vacío de un error. `getUsersPage` es el ejemplo de la base.
+- No caches sesiones ni datos privados entre peticiones. `React.cache` se usa para deduplicar durante un render. Al cambiar respuestas o redirigir en el proxy, conserva todas las cookies y las cabeceras de caché entregadas por Supabase.
+- Crea migraciones con la CLI. Define tanto permisos SQL (`GRANT`/`REVOKE`) como RLS: uno no reemplaza al otro. Mantén helpers internos en `private`, con `search_path` fijo y permisos mínimos. Las RPC públicas con privilegios deben validar al usuario dentro de la función.
+- Los roles y el estado activo salen de `profiles`, nunca de `user_metadata`. Para futuras tablas, la RLS debe comprobar también el acceso activo según el flujo, además de identidad/propiedad.
+- Prueba cambios de permisos con usuarios normales, administradores, inactivos y acceso anónimo. `supabase/tests/access.sql` verifica el contrato actual en una base local desechable. No ejecutes fixtures en producción.
+- Si una operación cruza Auth y tablas, contempla fallos parciales y comprueba que realmente se afectó la fila esperada. Devuelve errores comprensibles al usuario y registra detalles técnicos solo en el servidor.
+
+## Formularios y navegación
+
+- Compón formularios con `FieldGroup`, `Field`, `FieldLabel` y controles shadcn. Asocia etiquetas mediante `htmlFor`/`id`, incluye `name` y `autoComplete`, y usa `Checkbox` para confirmaciones. Los `SelectItem` van dentro de `SelectGroup`.
+- Valida otra vez en el servidor. Bloquea envíos repetidos y evita que un diálogo descarte un resultado mientras se guarda. Al volver a abrir una edición, toma los valores actuales de sus props.
+- Mantén enlaces nativos o `Link` de Next.js. No interceptes globalmente los clics para animar: puede romper paginación, anclas, apertura en otra pestaña y componentes compuestos.
+- Los mensajes de éxito y error deben anunciarse de forma accesible. Usa los estados `loading.tsx`, `error.tsx`, `EmptyState` y los componentes ya disponibles cuando apliquen.
+- El formateador excluye `src/components/ui` y `.agents`; no reformatees primitivas ni skills instaladas como parte de un cambio de aplicación.
+
 ## Entrega
 
 - Verifica lo que cambiaste con `pnpm lint`, `pnpm typecheck`, las pruebas pertinentes y `pnpm build` cuando corresponda. No agregues pruebas que solo repitan la implementación.

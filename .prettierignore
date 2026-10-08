@@ -1,7 +1,10 @@
-dist/
 node_modules/
-.next/
+dist/
 .turbo/
-coverage/
-pnpm-lock.yaml
 .pnpm-store/
+.next/
+.agents/
+coverage/
+src/components/ui/
+pnpm-lock.yaml
+skills-lock.json
