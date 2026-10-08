@@ -3,15 +3,10 @@ import { type NextRequest, NextResponse } from "next/server"
 
 import { getSupabaseConfig } from "@/lib/supabase/config"
 import { loginSchema } from "@/lib/validations/auth"
+import type { Database } from "@/types/database"
 
 function destinationUrl(request: NextRequest, pathname: string) {
-  const host =
-    request.headers.get("x-forwarded-host") ?? request.headers.get("host")
-  const protocol =
-    request.headers.get("x-forwarded-proto") ??
-    request.nextUrl.protocol.slice(0, -1)
-  const origin = host ? `${protocol}://${host}` : request.nextUrl.origin
-  return new URL(pathname, origin)
+  return new URL(pathname, request.nextUrl.origin)
 }
 
 function loginFailure(
@@ -29,9 +24,25 @@ function loginFailure(
 }
 
 export async function POST(request: NextRequest) {
+  // This Route Handler does not receive Server Actions' automatic Origin check.
+  const origin = request.headers.get("origin")
+  if (
+    request.headers.get("sec-fetch-site") === "cross-site" ||
+    (origin && origin !== request.nextUrl.origin)
+  ) {
+    return NextResponse.json(
+      { ok: false, message: "Solicitud no permitida." },
+      { status: 403 }
+    )
+  }
   const expectsJson =
     request.headers.get("accept")?.includes("application/json") ?? false
-  const formData = await request.formData()
+  let formData: FormData
+  try {
+    formData = await request.formData()
+  } catch {
+    return loginFailure(request, "Revisa los datos ingresados.", expectsJson)
+  }
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -46,14 +57,18 @@ export async function POST(request: NextRequest) {
     ? NextResponse.json({ ok: true })
     : NextResponse.redirect(destination, 303)
   const { publishableKey, url } = getSupabaseConfig()
-  const supabase = createServerClient(url, publishableKey, {
+  response.headers.set("Cache-Control", "private, no-store")
+  const supabase = createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll()
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet, headers) {
         cookiesToSet.forEach(({ name, value, options }) =>
           response.cookies.set(name, value, options)
+        )
+        Object.entries(headers).forEach(([key, value]) =>
+          response.headers.set(key, value)
         )
       },
     },
@@ -62,11 +77,14 @@ export async function POST(request: NextRequest) {
   const { error } = await supabase.auth.signInWithPassword(parsed.data)
 
   if (error) {
+    const previous = response
     response = loginFailure(
       request,
       "El correo o la contraseña no son correctos.",
       expectsJson
     )
+    previous.cookies.getAll().forEach((cookie) => response.cookies.set(cookie))
+    response.headers.set("Cache-Control", "private, no-store")
   }
 
   return response

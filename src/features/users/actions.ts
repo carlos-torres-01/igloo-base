@@ -3,13 +3,14 @@ import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { requireAdmin } from "@/lib/auth"
 import { createAdminClient } from "@/lib/supabase/admin"
+import { emailSchema, passwordSchema } from "@/lib/validations/auth"
 import type { ActionResult } from "@/types/domain"
 
 const roleSchema = z.enum(["admin", "user"])
 const createUserSchema = z.object({
   fullName: z.string().trim().min(2).max(120),
-  email: z.email().trim().toLowerCase(),
-  password: z.string().min(12).max(128),
+  email: emailSchema,
+  password: passwordSchema,
   role: roleSchema,
 })
 const updateUserSchema = z.object({
@@ -31,16 +32,23 @@ export async function createUserAction(input: unknown): Promise<ActionResult> {
   const { data: existing, error: lookupError } = await supabase
     .from("profiles")
     .select("id")
-    .ilike("email", parsed.data.email)
+    .eq("email", parsed.data.email)
     .maybeSingle()
-  if (lookupError) return { ok: false, message: lookupError.message }
+  if (lookupError) {
+    console.error("Error consultando usuarios", lookupError)
+    return {
+      ok: false,
+      message: "No se pudo comprobar el correo. Inténtalo de nuevo.",
+    }
+  }
   if (existing)
     return { ok: false, message: "Ya existe una cuenta con ese correo." }
   const adminClient = createAdminClient()
   if (!adminClient)
     return {
       ok: false,
-      message: "Falta configurar SUPABASE_SERVICE_ROLE_KEY en el servidor.",
+      message:
+        "La creación de usuarios no está disponible. Contacta al responsable de la herramienta.",
     }
   const { data, error } = await adminClient.auth.admin.createUser({
     email: parsed.data.email,
@@ -51,7 +59,10 @@ export async function createUserAction(input: unknown): Promise<ActionResult> {
   if (error || !data.user)
     return {
       ok: false,
-      message: error?.message ?? "No se pudo crear el usuario.",
+      message:
+        error?.code === "email_exists"
+          ? "Ya existe una cuenta con ese correo."
+          : "No se pudo crear el usuario. Revisa los datos e inténtalo de nuevo.",
     }
   const { error: profileError } = await adminClient
     .from("profiles")
@@ -61,11 +72,23 @@ export async function createUserAction(input: unknown): Promise<ActionResult> {
       is_active: true,
     })
     .eq("id", data.user.id)
-  if (profileError)
+    .select("id")
+    .single()
+  if (profileError) {
+    console.error("Error configurando el perfil creado", profileError)
+    const { error: rollbackError } = await adminClient.auth.admin.deleteUser(
+      data.user.id
+    )
+    if (rollbackError)
+      console.error("No se pudo revertir la cuenta incompleta", rollbackError)
+    revalidatePath("/usuarios")
     return {
       ok: false,
-      message: `La cuenta fue creada, pero no se pudo guardar el perfil: ${profileError.message}`,
+      message: rollbackError
+        ? "La cuenta se creó, pero su configuración no se completó. Revisa el usuario antes de volver a intentarlo."
+        : "No se pudo completar la creación. Inténtalo de nuevo.",
     }
+  }
   revalidatePath("/usuarios")
   return {
     ok: true,
@@ -85,7 +108,23 @@ export async function updateUserAction(input: unknown): Promise<ActionResult> {
     target_role: parsed.data.role,
     target_is_active: parsed.data.isActive,
   })
-  if (error) return { ok: false, message: error.message }
+  if (error) {
+    const expectedMessages = [
+      "No autorizado.",
+      "Nombre inválido.",
+      "Datos de usuario incompletos.",
+      "No puedes quitarte tu propio acceso de administrador.",
+      "Usuario no encontrado.",
+      "Debe permanecer al menos un administrador activo.",
+    ]
+    console.error("Error actualizando usuario", error)
+    return {
+      ok: false,
+      message: expectedMessages.includes(error.message)
+        ? error.message
+        : "No se pudo guardar el usuario. Inténtalo de nuevo.",
+    }
+  }
   revalidatePath("/usuarios")
   return { ok: true, message: "Usuario actualizado." }
 }

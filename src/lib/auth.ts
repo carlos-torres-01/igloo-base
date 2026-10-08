@@ -9,20 +9,20 @@ export const requireUser = cache(async () => {
   const supabase = await createClient()
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
 
+  if (authError && (authError.status ?? 0) >= 500) throw authError
   if (!user) redirect("/login")
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, full_name, email, role, is_active")
     .eq("id", user.id)
-    .single()
+    .maybeSingle()
 
-  if (!profile) {
-    redirect("/login?error=No tienes permisos para acceder.")
-  }
-  if (!profile.is_active) redirect("/acceso-inactivo")
+  if (profileError) throw profileError
+  if (!profile?.is_active) redirect("/acceso-inactivo")
 
   return { user, profile, supabase }
 })
