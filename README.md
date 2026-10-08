@@ -1,5 +1,7 @@
 # Base Igloo
 
+![Vista de la gestión de usuarios de Igloo Base, con navegación lateral, roles y estados de acceso.](docs/images/igloo-base-usuarios.png)
+
 Base reutilizable para desarrollar herramientas de Igloo con Next.js, React, TypeScript, Supabase Auth, gestión de usuarios, Tailwind, componentes UI y animaciones.
 
 Recharts está disponible para futuras visualizaciones. Cuando se implemente una gráfica, se puede añadir el componente `Chart` de shadcn según la necesidad concreta.
