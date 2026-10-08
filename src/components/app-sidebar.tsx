@@ -1,9 +1,9 @@
 "use client"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { House, LogOut, UserRound, UsersRound } from "lucide-react"
 import { BrandLogo } from "@/components/brand-logo"
-import { Button, buttonVariants } from "@/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
@@ -26,10 +26,24 @@ export function AppSidebar({ role }: { role: UserRole }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
-        <Link href="/inicio" aria-label="Igloo">
+        <Link
+          href="/inicio"
+          aria-label="Igloo, ir al inicio"
+          className="flex h-16 items-center justify-center pr-6 group-data-[collapsible=icon]:pr-0"
+        >
           <BrandLogo className="group-data-[collapsible=icon]:hidden" />
-          <span className="hidden text-2xl font-black text-foreground group-data-[collapsible=icon]:block">
-            i
+          <span
+            className="hidden items-center justify-center group-data-[collapsible=icon]:inline-flex"
+            aria-hidden="true"
+          >
+            <Image
+              src="/brand/igloo-mark.webp"
+              alt=""
+              width={25}
+              height={104}
+              unoptimized
+              className="h-8 w-auto"
+            />
           </span>
         </Link>
       </SidebarHeader>
@@ -56,34 +70,37 @@ export function AppSidebar({ role }: { role: UserRole }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-3">
-        <Link
-          href="/cuenta"
-          aria-label="Mi cuenta"
-          aria-current={pathname === "/cuenta" ? "page" : undefined}
-          className={buttonVariants({
-            variant: "ghost",
-            className: "w-full justify-start",
-          })}
-        >
-          <UserRound />
-          <span className="group-data-[collapsible=icon]:hidden">
-            Mi cuenta
-          </span>
-        </Link>
-        <form action={logoutAction}>
-          <Button
-            type="submit"
-            aria-label="Cerrar sesión"
-            variant="ghost"
-            className="w-full justify-start"
-          >
-            <LogOut />
-            <span className="group-data-[collapsible=icon]:hidden">
-              Cerrar sesión
-            </span>
-          </Button>
-        </form>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              render={<Link href="/cuenta" />}
+              aria-label="Mi cuenta"
+              aria-current={pathname === "/cuenta" ? "page" : undefined}
+              isActive={pathname === "/cuenta"}
+              tooltip="Mi cuenta"
+            >
+              <UserRound aria-hidden="true" />
+              <span className="group-data-[collapsible=icon]:hidden">
+                Mi cuenta
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <form action={logoutAction}>
+              <SidebarMenuButton
+                type="submit"
+                aria-label="Cerrar sesión"
+                tooltip="Cerrar sesión"
+              >
+                <LogOut aria-hidden="true" />
+                <span className="group-data-[collapsible=icon]:hidden">
+                  Cerrar sesión
+                </span>
+              </SidebarMenuButton>
+            </form>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
   )
