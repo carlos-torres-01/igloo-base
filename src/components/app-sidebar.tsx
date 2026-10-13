@@ -30,7 +30,7 @@ export function AppSidebar({ role }: { role: UserRole }) {
   if (role === "admin")
     navigation.push({ href: "/usuarios", label: "Usuarios", icon: UsersRound })
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="border-r-0">
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
         <Link
           href="/inicio"

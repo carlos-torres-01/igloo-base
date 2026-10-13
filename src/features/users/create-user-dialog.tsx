@@ -99,6 +99,7 @@ export function CreateUserDialog() {
         return
       }
       setCreatedEmail(email)
+      setShowPassword(false)
     })
   }
 
@@ -141,13 +142,14 @@ export function CreateUserDialog() {
                 <InputGroupInput
                   id="created-password"
                   value={password}
+                  type={showPassword ? "text" : "password"}
                   readOnly
                   className="font-mono"
                 />
-                <InputGroupAddon align="inline-end">
+                <InputGroupAddon align="inline-end" className="gap-0.5 pr-2">
                   <InputGroupButton
-                    variant="outline"
-                    size="icon-sm"
+                    variant="ghost"
+                    size="icon-xs"
                     onClick={copyPassword}
                     aria-label="Copiar contraseña"
                   >
@@ -155,6 +157,20 @@ export function CreateUserDialog() {
                       <Check aria-hidden="true" />
                     ) : (
                       <Copy aria-hidden="true" />
+                    )}
+                  </InputGroupButton>
+                  <InputGroupButton
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff aria-hidden="true" />
+                    ) : (
+                      <Eye aria-hidden="true" />
                     )}
                   </InputGroupButton>
                 </InputGroupAddon>
@@ -269,16 +285,39 @@ export function CreateUserDialog() {
                       name="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
-                      onChange={(event) => setPassword(event.target.value)}
+                      onChange={(event) => {
+                        setPassword(event.target.value)
+                        setCopied(false)
+                      }}
                       autoComplete="new-password"
                       minLength={12}
                       maxLength={128}
                       required
                     />
-                    <InputGroupAddon align="inline-end">
+                    <InputGroupAddon
+                      align="inline-end"
+                      className="gap-0.5 pr-2"
+                    >
                       <InputGroupButton
-                        variant="outline"
-                        size="icon-sm"
+                        variant="ghost"
+                        size="icon-xs"
+                        aria-label={
+                          copied ? "Contraseña copiada" : "Copiar contraseña"
+                        }
+                        title={
+                          copied ? "Contraseña copiada" : "Copiar contraseña"
+                        }
+                        onClick={copyPassword}
+                      >
+                        {copied ? (
+                          <Check aria-hidden="true" />
+                        ) : (
+                          <Copy aria-hidden="true" />
+                        )}
+                      </InputGroupButton>
+                      <InputGroupButton
+                        variant="ghost"
+                        size="icon-xs"
                         aria-label={
                           showPassword
                             ? "Ocultar contraseña"
@@ -300,7 +339,8 @@ export function CreateUserDialog() {
                     size="sm"
                     onClick={() => {
                       setPassword(generatePassword())
-                      setShowPassword(true)
+                      setShowPassword(false)
+                      setCopied(false)
                     }}
                   >
                     <RefreshCw data-icon="inline-start" /> Generar contraseña

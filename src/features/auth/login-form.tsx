@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { LockKeyhole, Mail } from "lucide-react"
+import { Eye, EyeOff, LockKeyhole, Mail } from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { useTransitionRouter } from "@/components/motion/route-transition"
@@ -10,6 +10,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
   InputGroup,
   InputGroupAddon,
+  InputGroupButton,
   InputGroupInput,
 } from "@/components/ui/input-group"
 
@@ -17,6 +18,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   const router = useTransitionRouter()
   const [error, setError] = useState(initialError)
   const [pending, setPending] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -88,13 +90,30 @@ export function LoginForm({ initialError }: { initialError?: string }) {
             </InputGroupAddon>
             <InputGroupInput
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               autoComplete="current-password"
               maxLength={128}
               disabled={pending}
               required
             />
+            <InputGroupAddon align="inline-end" className="pr-2">
+              <InputGroupButton
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                aria-label={
+                  showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                }
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff aria-hidden="true" />
+                ) : (
+                  <Eye aria-hidden="true" />
+                )}
+              </InputGroupButton>
+            </InputGroupAddon>
           </InputGroup>
         </Field>
       </FieldGroup>
