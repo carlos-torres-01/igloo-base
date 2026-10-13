@@ -18,6 +18,12 @@ import {
 import { logoutAction } from "@/features/auth/actions"
 import type { UserRole } from "@/types/profiles"
 
+const menuButtonTransitionClassName =
+  "transition-[width,padding,gap] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-data-[collapsible=icon]:h-9! group-data-[collapsible=icon]:w-8! group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-2!"
+
+const menuLabelTransitionClassName =
+  "min-w-0 max-w-32 overflow-hidden whitespace-nowrap transition-[max-width,opacity] duration-150 ease-out group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0"
+
 export function AppSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
   const navigation = [{ href: "/inicio", label: "Inicio", icon: House }]
@@ -29,11 +35,16 @@ export function AppSidebar({ role }: { role: UserRole }) {
         <Link
           href="/inicio"
           aria-label="Igloo, ir al inicio"
-          className="flex h-16 items-center justify-center pr-6 group-data-[collapsible=icon]:pr-0"
+          className="relative flex h-16 items-center justify-center pr-6 transition-[padding] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] group-data-[collapsible=icon]:pr-0"
         >
-          <BrandLogo className="group-data-[collapsible=icon]:hidden" />
           <span
-            className="hidden items-center justify-center group-data-[collapsible=icon]:inline-flex"
+            aria-hidden="true"
+            className="max-w-36 overflow-hidden transition-[max-width,opacity] duration-150 ease-out group-data-[collapsible=icon]:max-w-0 group-data-[collapsible=icon]:opacity-0"
+          >
+            <BrandLogo />
+          </span>
+          <span
+            className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 ease-out group-data-[collapsible=icon]:opacity-100"
             aria-hidden="true"
           >
             <Image
@@ -54,6 +65,7 @@ export function AppSidebar({ role }: { role: UserRole }) {
               {navigation.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
+                    className={menuButtonTransitionClassName}
                     render={<Link href={item.href} />}
                     isActive={pathname.startsWith(item.href)}
                     aria-current={
@@ -62,7 +74,9 @@ export function AppSidebar({ role }: { role: UserRole }) {
                     tooltip={item.label}
                   >
                     <item.icon />
-                    <span>{item.label}</span>
+                    <span className={menuLabelTransitionClassName}>
+                      {item.label}
+                    </span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -74,6 +88,7 @@ export function AppSidebar({ role }: { role: UserRole }) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
+              className={menuButtonTransitionClassName}
               render={<Link href="/cuenta" />}
               aria-label="Mi cuenta"
               aria-current={pathname === "/cuenta" ? "page" : undefined}
@@ -81,20 +96,19 @@ export function AppSidebar({ role }: { role: UserRole }) {
               tooltip="Mi cuenta"
             >
               <UserRound aria-hidden="true" />
-              <span className="group-data-[collapsible=icon]:hidden">
-                Mi cuenta
-              </span>
+              <span className={menuLabelTransitionClassName}>Mi cuenta</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <form action={logoutAction}>
               <SidebarMenuButton
+                className={menuButtonTransitionClassName}
                 type="submit"
                 aria-label="Cerrar sesión"
                 tooltip="Cerrar sesión"
               >
                 <LogOut aria-hidden="true" />
-                <span className="group-data-[collapsible=icon]:hidden">
+                <span className={menuLabelTransitionClassName}>
                   Cerrar sesión
                 </span>
               </SidebarMenuButton>
