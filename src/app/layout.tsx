@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist_Mono, Poppins } from "next/font/google"
 
 import "./globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
 import { MotionProvider } from "@/components/motion/motion-provider"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
@@ -41,11 +42,14 @@ export default function RootLayout({
         "font-sans",
         poppins.variable
       )}
+      data-accent="violet"
     >
       <body className="min-h-svh">
-        <TooltipProvider delay={0}>
-          <MotionProvider>{children}</MotionProvider>
-        </TooltipProvider>
+        <ThemeProvider>
+          <TooltipProvider delay={0}>
+            <MotionProvider>{children}</MotionProvider>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

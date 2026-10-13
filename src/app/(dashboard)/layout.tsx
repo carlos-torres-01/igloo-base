@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar"
+import { AppearanceControl } from "@/components/appearance-control"
 import { Reveal } from "@/components/motion/reveal"
 import { RouteTransition } from "@/components/motion/route-transition"
 import {
@@ -26,8 +27,9 @@ export default async function DashboardLayout({
         </a>
         <AppSidebar role={profile.role} />
         <SidebarInset>
-          <div className="flex h-14 items-center px-4 md:px-6">
+          <div className="flex h-14 items-center justify-between px-4 md:px-6">
             <SidebarTrigger aria-label="Alternar menú de navegación" />
+            <AppearanceControl />
           </div>
           <div
             id="contenido"
