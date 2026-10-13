@@ -42,7 +42,7 @@ export default function RootLayout({
         "font-sans",
         poppins.variable
       )}
-      data-accent="violet"
+      data-accent="neutral"
       data-density="normal"
       data-corner-style="rounded"
     >

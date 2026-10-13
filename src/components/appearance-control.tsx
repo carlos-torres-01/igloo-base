@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover"
 
 const accents = [
+  { name: "neutral", label: "Neutro", swatch: "#171717" },
   { name: "red", label: "Rojo", swatch: "#e11d48" },
   { name: "orange", label: "Naranja", swatch: "#d97706" },
   { name: "green", label: "Verde", swatch: "#65a30d" },
@@ -61,7 +62,7 @@ function isCornerStyleName(
 
 function getAccentSnapshot(): AccentName {
   const currentAccent = document.documentElement.dataset.accent
-  return isAccentName(currentAccent) ? currentAccent : "violet"
+  return isAccentName(currentAccent) ? currentAccent : "neutral"
 }
 
 function subscribeToAccent(onChange: () => void) {
@@ -100,7 +101,7 @@ function initializeAppearance() {
 
   document.documentElement.dataset.accent = isAccentName(savedAccent)
     ? savedAccent
-    : "violet"
+    : "neutral"
   document.documentElement.dataset.density = isDensityName(savedDensity)
     ? savedDensity
     : "normal"
@@ -146,7 +147,7 @@ export function AppearanceControl() {
   const accent = useSyncExternalStore(
     subscribeToAccent,
     getAccentSnapshot,
-    () => "violet"
+    () => "neutral"
   )
   const density = useSyncExternalStore(
     subscribeToDensity,
@@ -248,7 +249,7 @@ export function AppearanceControl() {
                 >
                   <span
                     aria-hidden="true"
-                    className="size-5 rounded-full"
+                    className="size-5 rounded-full border border-foreground/15"
                     style={{ backgroundColor: option.swatch }}
                   />
                 </Button>
