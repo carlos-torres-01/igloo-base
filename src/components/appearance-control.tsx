@@ -83,7 +83,7 @@ export function AppearanceControl() {
           </Button>
         }
       />
-      <PopoverContent align="end" className="w-fit min-w-0 gap-3 p-3">
+      <PopoverContent align="end" className="w-fit min-w-0 gap-3 p-3 ring-0">
         <PopoverHeader>
           <PopoverTitle>Apariencia</PopoverTitle>
         </PopoverHeader>
