@@ -87,6 +87,14 @@
   --spacing: 0.225rem;
 }
 
+:root[data-corner-style="soft"] {
+  --radius: 0.375rem;
+}
+
+:root[data-corner-style="straight"] {
+  --radius: 0;
+}
+
 :root[data-density="spacious"] {
   --spacing: 0.275rem;
 }

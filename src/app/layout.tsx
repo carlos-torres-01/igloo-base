@@ -44,6 +44,7 @@ export default function RootLayout({
       )}
       data-accent="violet"
       data-density="normal"
+      data-corner-style="rounded"
     >
       <body className="min-h-svh">
         <ThemeProvider>

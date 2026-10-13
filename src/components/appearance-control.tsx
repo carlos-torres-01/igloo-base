@@ -31,10 +31,19 @@ const densities = [
 ] as const
 
 type DensityName = (typeof densities)[number]["name"]
+const cornerStyles = [
+  { name: "rounded", label: "Redondeado", radius: "0.625rem" },
+  { name: "soft", label: "Suave", radius: "0.375rem" },
+  { name: "straight", label: "Recto", radius: "0px" },
+] as const
+
+type CornerStyleName = (typeof cornerStyles)[number]["name"]
 const ACCENT_STORAGE_KEY = "igloo-accent"
 const ACCENT_CHANGE_EVENT = "igloo-accent-change"
 const DENSITY_STORAGE_KEY = "igloo-density"
 const DENSITY_CHANGE_EVENT = "igloo-density-change"
+const CORNER_STYLE_STORAGE_KEY = "igloo-corner-style"
+const CORNER_STYLE_CHANGE_EVENT = "igloo-corner-style-change"
 
 function isAccentName(value: string | null | undefined): value is AccentName {
   return accents.some((accent) => accent.name === value)
@@ -42,6 +51,12 @@ function isAccentName(value: string | null | undefined): value is AccentName {
 
 function isDensityName(value: string | null | undefined): value is DensityName {
   return densities.some((density) => density.name === value)
+}
+
+function isCornerStyleName(
+  value: string | null | undefined
+): value is CornerStyleName {
+  return cornerStyles.some((cornerStyle) => cornerStyle.name === value)
 }
 
 function getAccentSnapshot(): AccentName {
@@ -81,6 +96,7 @@ function notifyDensityChange() {
 function initializeAppearance() {
   const savedAccent = window.localStorage.getItem(ACCENT_STORAGE_KEY)
   const savedDensity = window.localStorage.getItem(DENSITY_STORAGE_KEY)
+  const savedCornerStyle = window.localStorage.getItem(CORNER_STYLE_STORAGE_KEY)
 
   document.documentElement.dataset.accent = isAccentName(savedAccent)
     ? savedAccent
@@ -88,15 +104,41 @@ function initializeAppearance() {
   document.documentElement.dataset.density = isDensityName(savedDensity)
     ? savedDensity
     : "normal"
+  document.documentElement.dataset.cornerStyle = isCornerStyleName(
+    savedCornerStyle
+  )
+    ? savedCornerStyle
+    : "rounded"
 
   notifyAccentChange()
   notifyDensityChange()
+  notifyCornerStyleChange()
 }
 
 function saveDensity(nextDensity: DensityName) {
   window.localStorage.setItem(DENSITY_STORAGE_KEY, nextDensity)
   document.documentElement.dataset.density = nextDensity
   notifyDensityChange()
+}
+
+function getCornerStyleSnapshot(): CornerStyleName {
+  const currentCornerStyle = document.documentElement.dataset.cornerStyle
+  return isCornerStyleName(currentCornerStyle) ? currentCornerStyle : "rounded"
+}
+
+function subscribeToCornerStyle(onChange: () => void) {
+  window.addEventListener(CORNER_STYLE_CHANGE_EVENT, onChange)
+  return () => window.removeEventListener(CORNER_STYLE_CHANGE_EVENT, onChange)
+}
+
+function notifyCornerStyleChange() {
+  window.dispatchEvent(new Event(CORNER_STYLE_CHANGE_EVENT))
+}
+
+function saveCornerStyle(nextCornerStyle: CornerStyleName) {
+  window.localStorage.setItem(CORNER_STYLE_STORAGE_KEY, nextCornerStyle)
+  document.documentElement.dataset.cornerStyle = nextCornerStyle
+  notifyCornerStyleChange()
 }
 
 export function AppearanceControl() {
@@ -111,6 +153,11 @@ export function AppearanceControl() {
     getDensitySnapshot,
     () => "normal"
   )
+  const cornerStyle = useSyncExternalStore(
+    subscribeToCornerStyle,
+    getCornerStyleSnapshot,
+    () => "rounded"
+  )
 
   useEffect(() => {
     initializeAppearance()
@@ -122,6 +169,10 @@ export function AppearanceControl() {
 
   function selectDensity(nextDensity: DensityName) {
     saveDensity(nextDensity)
+  }
+
+  function selectCornerStyle(nextCornerStyle: CornerStyleName) {
+    saveCornerStyle(nextCornerStyle)
   }
 
   return (
@@ -228,6 +279,37 @@ export function AppearanceControl() {
                   onClick={() => selectDensity(option.name)}
                 >
                   <option.icon aria-hidden="true" />
+                </Button>
+              </IconTooltip>
+            ))}
+          </div>
+        </section>
+        <section
+          className="flex flex-col gap-2"
+          aria-labelledby="corner-style-label"
+        >
+          <h3
+            id="corner-style-label"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Bordes
+          </h3>
+          <div className="flex gap-1" role="group" aria-label="Bordes">
+            {cornerStyles.map((option) => (
+              <IconTooltip key={option.name} label={option.label}>
+                <Button
+                  type="button"
+                  variant={cornerStyle === option.name ? "secondary" : "ghost"}
+                  size="icon-sm"
+                  aria-pressed={cornerStyle === option.name}
+                  aria-label={option.label}
+                  onClick={() => selectCornerStyle(option.name)}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="size-4 border-2 border-current"
+                    style={{ borderRadius: option.radius }}
+                  />
                 </Button>
               </IconTooltip>
             ))}
