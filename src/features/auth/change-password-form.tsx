@@ -1,11 +1,16 @@
 "use client"
 
 import { useState, useTransition, type FormEvent } from "react"
+import { LockKeyhole } from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import { changePasswordAction } from "@/features/auth/change-password-action"
 
 export function ChangePasswordForm() {
@@ -48,31 +53,41 @@ export function ChangePasswordForm() {
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="new-password">Nueva contraseña</FieldLabel>
-          <Input
-            id="new-password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            minLength={12}
-            maxLength={128}
-            disabled={pending}
-            required
-          />
+          <InputGroup>
+            <InputGroupAddon align="inline-start" aria-hidden="true">
+              <LockKeyhole />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="new-password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              minLength={12}
+              maxLength={128}
+              disabled={pending}
+              required
+            />
+          </InputGroup>
         </Field>
         <Field>
           <FieldLabel htmlFor="confirm-password">
             Confirmar contraseña
           </FieldLabel>
-          <Input
-            id="confirm-password"
-            name="confirmation"
-            type="password"
-            autoComplete="new-password"
-            minLength={12}
-            maxLength={128}
-            disabled={pending}
-            required
-          />
+          <InputGroup>
+            <InputGroupAddon align="inline-start" aria-hidden="true">
+              <LockKeyhole />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="confirm-password"
+              name="confirmation"
+              type="password"
+              autoComplete="new-password"
+              minLength={12}
+              maxLength={128}
+              disabled={pending}
+              required
+            />
+          </InputGroup>
         </Field>
       </FieldGroup>
       <Button type="submit" disabled={pending}>

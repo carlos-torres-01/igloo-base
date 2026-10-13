@@ -2,7 +2,18 @@
 
 import { useState, useTransition, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { Check, Copy, Eye, EyeOff, Plus, RefreshCw } from "lucide-react"
+import {
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LockKeyhole,
+  Mail,
+  Plus,
+  RefreshCw,
+  UserRound,
+} from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { Button } from "@/components/ui/button"
@@ -15,9 +26,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
   Select,
   SelectContent,
@@ -118,22 +134,31 @@ export function CreateUserDialog() {
               <FieldLabel htmlFor="created-password">
                 Contraseña inicial
               </FieldLabel>
-              <div className="flex gap-2">
-                <Input
+              <InputGroup>
+                <InputGroupAddon align="inline-start" aria-hidden="true">
+                  <KeyRound />
+                </InputGroupAddon>
+                <InputGroupInput
                   id="created-password"
                   value={password}
                   readOnly
                   className="font-mono"
                 />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={copyPassword}
-                  aria-label="Copiar contraseña"
-                >
-                  {copied ? <Check /> : <Copy />}
-                </Button>
-              </div>
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    variant="outline"
+                    size="icon-sm"
+                    onClick={copyPassword}
+                    aria-label="Copiar contraseña"
+                  >
+                    {copied ? (
+                      <Check aria-hidden="true" />
+                    ) : (
+                      <Copy aria-hidden="true" />
+                    )}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
               <p className="text-xs text-muted-foreground">
                 Compártela por un canal seguro. El usuario puede cambiarla en Mi
                 cuenta.
@@ -162,25 +187,35 @@ export function CreateUserDialog() {
               <FieldGroup>
                 <Field>
                   <FieldLabel htmlFor="user-name">Nombre</FieldLabel>
-                  <Input
-                    id="user-name"
-                    name="fullName"
-                    autoComplete="name"
-                    required
-                    minLength={2}
-                    maxLength={120}
-                  />
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start" aria-hidden="true">
+                      <UserRound />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="user-name"
+                      name="fullName"
+                      autoComplete="name"
+                      required
+                      minLength={2}
+                      maxLength={120}
+                    />
+                  </InputGroup>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="user-email">Correo</FieldLabel>
-                  <Input
-                    id="user-email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    spellCheck={false}
-                    required
-                  />
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start" aria-hidden="true">
+                      <Mail />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                      id="user-email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      spellCheck={false}
+                      required
+                    />
+                  </InputGroup>
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="user-role">Rol</FieldLabel>
@@ -225,8 +260,11 @@ export function CreateUserDialog() {
                   <FieldLabel htmlFor="user-password">
                     Contraseña inicial
                   </FieldLabel>
-                  <div className="flex gap-2">
-                    <Input
+                  <InputGroup>
+                    <InputGroupAddon align="inline-start" aria-hidden="true">
+                      <LockKeyhole />
+                    </InputGroupAddon>
+                    <InputGroupInput
                       id="user-password"
                       name="password"
                       type={showPassword ? "text" : "password"}
@@ -237,20 +275,25 @@ export function CreateUserDialog() {
                       maxLength={128}
                       required
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      aria-label={
-                        showPassword
-                          ? "Ocultar contraseña"
-                          : "Mostrar contraseña"
-                      }
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOff /> : <Eye />}
-                    </Button>
-                  </div>
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label={
+                          showPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff aria-hidden="true" />
+                        ) : (
+                          <Eye aria-hidden="true" />
+                        )}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
                   <Button
                     type="button"
                     variant="outline"

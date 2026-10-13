@@ -2,7 +2,7 @@
 
 import { useState, useTransition, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { Pencil } from "lucide-react"
+import { Pencil, UserRound } from "lucide-react"
 
 import { IconTooltip } from "@/components/icon-tooltip"
 import { AnimatedAlert } from "@/components/motion/animated-alert"
@@ -16,8 +16,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 import {
   Select,
   SelectContent,
@@ -140,16 +144,21 @@ export function EditUserDialog({
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor={`name-${profile.id}`}>Nombre</FieldLabel>
-                <Input
-                  id={`name-${profile.id}`}
-                  name="fullName"
-                  autoComplete="name"
-                  value={fullName}
-                  onChange={(event) => setFullName(event.target.value)}
-                  minLength={2}
-                  maxLength={120}
-                  required
-                />
+                <InputGroup>
+                  <InputGroupAddon align="inline-start" aria-hidden="true">
+                    <UserRound />
+                  </InputGroupAddon>
+                  <InputGroupInput
+                    id={`name-${profile.id}`}
+                    name="fullName"
+                    autoComplete="name"
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    minLength={2}
+                    maxLength={120}
+                    required
+                  />
+                </InputGroup>
               </Field>
               <Field data-disabled={isCurrentUser}>
                 <FieldLabel htmlFor={`role-${profile.id}`}>Rol</FieldLabel>

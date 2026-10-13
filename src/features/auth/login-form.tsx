@@ -1,12 +1,17 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { LockKeyhole, Mail } from "lucide-react"
 
 import { AnimatedAlert } from "@/components/motion/animated-alert"
 import { useTransitionRouter } from "@/components/motion/route-transition"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/components/ui/input-group"
 
 export function LoginForm({ initialError }: { initialError?: string }) {
   const router = useTransitionRouter()
@@ -58,29 +63,39 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       <FieldGroup>
         <Field>
           <FieldLabel htmlFor="email">Correo</FieldLabel>
-          <Input
-            id="email"
-            type="email"
-            name="email"
-            autoComplete="email"
-            spellCheck={false}
-            disabled={pending}
-            placeholder="nombre@empresa.com"
-            required
-          />
+          <InputGroup>
+            <InputGroupAddon align="inline-start" aria-hidden="true">
+              <Mail />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="email"
+              type="email"
+              name="email"
+              autoComplete="email"
+              spellCheck={false}
+              disabled={pending}
+              placeholder="nombre@empresa.com"
+              required
+            />
+          </InputGroup>
         </Field>
 
         <Field>
           <FieldLabel htmlFor="password">Contraseña</FieldLabel>
-          <Input
-            id="password"
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            maxLength={128}
-            disabled={pending}
-            required
-          />
+          <InputGroup>
+            <InputGroupAddon align="inline-start" aria-hidden="true">
+              <LockKeyhole />
+            </InputGroupAddon>
+            <InputGroupInput
+              id="password"
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              maxLength={128}
+              disabled={pending}
+              required
+            />
+          </InputGroup>
         </Field>
       </FieldGroup>
 

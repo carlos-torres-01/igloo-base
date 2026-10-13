@@ -75,6 +75,7 @@ Este archivo define cómo desarrollar esta aplicación. El objetivo es una inter
 ## Formularios y navegación
 
 - Compón formularios con `FieldGroup`, `Field`, `FieldLabel` y controles shadcn. Asocia etiquetas mediante `htmlFor`/`id`, incluye `name` y `autoComplete`, y usa `Checkbox` para confirmaciones. Los `SelectItem` van dentro de `SelectGroup`.
+- En campos de texto, usa iconos Lucide contextuales dentro de `InputGroup` (`InputGroupAddon` + `InputGroupInput`) cuando ayuden a identificar el dato; márcalos `aria-hidden` y conserva siempre la etiqueta visible. Para revelar, copiar u otra acción dentro del campo, usa `InputGroupButton` dentro de `InputGroupAddon`.
 - Valida otra vez en el servidor. Bloquea envíos repetidos y evita que un diálogo descarte un resultado mientras se guarda. Al volver a abrir una edición, toma los valores actuales de sus props.
 - Mantén enlaces nativos o `Link` de Next.js. No interceptes globalmente los clics para animar: puede romper paginación, anclas, apertura en otra pestaña y componentes compuestos.
 - Los mensajes de éxito y error deben anunciarse de forma accesible. Usa los estados `loading.tsx`, `error.tsx`, `EmptyState` y los componentes ya disponibles cuando apliquen.
