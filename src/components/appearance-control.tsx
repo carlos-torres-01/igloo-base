@@ -2,17 +2,10 @@
 
 import { useEffect, useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Palette, Rows2, Rows3, Rows4, Sun } from "lucide-react"
+import { Moon, Rows2, Rows3, Rows4, Sun } from "lucide-react"
 
 import { IconTooltip } from "@/components/icon-tooltip"
 import { Button } from "@/components/ui/button"
-import {
-  Popover,
-  PopoverContent,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 
 const accents = [
   { name: "neutral", label: "Neutro", swatch: "#171717" },
@@ -142,7 +135,15 @@ function saveCornerStyle(nextCornerStyle: CornerStyleName) {
   notifyCornerStyleChange()
 }
 
-export function AppearanceControl() {
+export function AppearanceInitializer() {
+  useEffect(() => {
+    initializeAppearance()
+  }, [])
+
+  return null
+}
+
+export function AppearanceSettings() {
   const { resolvedTheme, setTheme } = useTheme()
   const accent = useSyncExternalStore(
     subscribeToAccent,
@@ -160,10 +161,6 @@ export function AppearanceControl() {
     () => "rounded"
   )
 
-  useEffect(() => {
-    initializeAppearance()
-  }, [])
-
   function selectAccent(nextAccent: AccentName) {
     saveAccent(nextAccent)
   }
@@ -177,146 +174,131 @@ export function AppearanceControl() {
   }
 
   return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <Button variant="ghost" size="icon-sm" aria-label="Apariencia">
-            <Palette aria-hidden="true" />
-          </Button>
-        }
-      />
-      <PopoverContent align="end" className="w-fit min-w-0 gap-3 p-3 ring-0">
-        <PopoverHeader>
-          <PopoverTitle>Apariencia</PopoverTitle>
-        </PopoverHeader>
+    <div className="flex flex-col gap-3">
+      <h3 className="text-sm font-medium">Apariencia</h3>
+      <section className="flex flex-col gap-2" aria-labelledby="theme-label">
+        <h3
+          id="theme-label"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          Tema
+        </h3>
+        <div className="flex gap-1" role="group" aria-label="Tema">
+          <IconTooltip label="Claro">
+            <Button
+              type="button"
+              variant={resolvedTheme === "light" ? "secondary" : "ghost"}
+              size="icon-sm"
+              aria-pressed={resolvedTheme === "light"}
+              aria-label="Claro"
+              onClick={() => setTheme("light")}
+            >
+              <Sun aria-hidden="true" />
+            </Button>
+          </IconTooltip>
+          <IconTooltip label="Oscuro">
+            <Button
+              type="button"
+              variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
+              size="icon-sm"
+              aria-pressed={resolvedTheme === "dark"}
+              aria-label="Oscuro"
+              onClick={() => setTheme("dark")}
+            >
+              <Moon aria-hidden="true" />
+            </Button>
+          </IconTooltip>
+        </div>
+      </section>
 
-        <section className="flex flex-col gap-2" aria-labelledby="theme-label">
-          <h3
-            id="theme-label"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Tema
-          </h3>
-          <div className="flex gap-1" role="group" aria-label="Tema">
-            <IconTooltip label="Claro">
+      <section className="flex flex-col gap-2" aria-labelledby="accent-label">
+        <h3
+          id="accent-label"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          Color principal
+        </h3>
+        <div
+          className="flex items-center gap-1"
+          role="group"
+          aria-label="Color principal"
+        >
+          {accents.map((option) => (
+            <IconTooltip key={option.name} label={option.label}>
               <Button
                 type="button"
-                variant={resolvedTheme === "light" ? "secondary" : "ghost"}
+                variant={accent === option.name ? "secondary" : "ghost"}
                 size="icon-sm"
-                aria-pressed={resolvedTheme === "light"}
-                aria-label="Claro"
-                onClick={() => setTheme("light")}
+                aria-pressed={accent === option.name}
+                aria-label={option.label}
+                onClick={() => selectAccent(option.name)}
               >
-                <Sun aria-hidden="true" />
+                <span
+                  aria-hidden="true"
+                  className="size-5 rounded-full border border-foreground/15"
+                  style={{ backgroundColor: option.swatch }}
+                />
               </Button>
             </IconTooltip>
-            <IconTooltip label="Oscuro">
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2" aria-labelledby="density-label">
+        <h3
+          id="density-label"
+          className="text-xs font-medium text-muted-foreground"
+        >
+          Espaciado
+        </h3>
+        <div className="flex gap-1" role="group" aria-label="Espaciado">
+          {densities.map((option) => (
+            <IconTooltip key={option.name} label={option.label}>
               <Button
                 type="button"
-                variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
+                variant={density === option.name ? "secondary" : "ghost"}
                 size="icon-sm"
-                aria-pressed={resolvedTheme === "dark"}
-                aria-label="Oscuro"
-                onClick={() => setTheme("dark")}
+                aria-pressed={density === option.name}
+                aria-label={option.label}
+                onClick={() => selectDensity(option.name)}
               >
-                <Moon aria-hidden="true" />
+                <option.icon aria-hidden="true" />
               </Button>
             </IconTooltip>
-          </div>
-        </section>
-
-        <section className="flex flex-col gap-2" aria-labelledby="accent-label">
-          <h3
-            id="accent-label"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Color principal
-          </h3>
-          <div
-            className="flex items-center gap-1"
-            role="group"
-            aria-label="Color principal"
-          >
-            {accents.map((option) => (
-              <IconTooltip key={option.name} label={option.label}>
-                <Button
-                  type="button"
-                  variant={accent === option.name ? "secondary" : "ghost"}
-                  size="icon-sm"
-                  aria-pressed={accent === option.name}
-                  aria-label={option.label}
-                  onClick={() => selectAccent(option.name)}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="size-5 rounded-full border border-foreground/15"
-                    style={{ backgroundColor: option.swatch }}
-                  />
-                </Button>
-              </IconTooltip>
-            ))}
-          </div>
-        </section>
-
-        <section
-          className="flex flex-col gap-2"
-          aria-labelledby="density-label"
+          ))}
+        </div>
+      </section>
+      <section
+        className="flex flex-col gap-2"
+        aria-labelledby="corner-style-label"
+      >
+        <h3
+          id="corner-style-label"
+          className="text-xs font-medium text-muted-foreground"
         >
-          <h3
-            id="density-label"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Espaciado
-          </h3>
-          <div className="flex gap-1" role="group" aria-label="Espaciado">
-            {densities.map((option) => (
-              <IconTooltip key={option.name} label={option.label}>
-                <Button
-                  type="button"
-                  variant={density === option.name ? "secondary" : "ghost"}
-                  size="icon-sm"
-                  aria-pressed={density === option.name}
-                  aria-label={option.label}
-                  onClick={() => selectDensity(option.name)}
-                >
-                  <option.icon aria-hidden="true" />
-                </Button>
-              </IconTooltip>
-            ))}
-          </div>
-        </section>
-        <section
-          className="flex flex-col gap-2"
-          aria-labelledby="corner-style-label"
-        >
-          <h3
-            id="corner-style-label"
-            className="text-xs font-medium text-muted-foreground"
-          >
-            Bordes
-          </h3>
-          <div className="flex gap-1" role="group" aria-label="Bordes">
-            {cornerStyles.map((option) => (
-              <IconTooltip key={option.name} label={option.label}>
-                <Button
-                  type="button"
-                  variant={cornerStyle === option.name ? "secondary" : "ghost"}
-                  size="icon-sm"
-                  aria-pressed={cornerStyle === option.name}
-                  aria-label={option.label}
-                  onClick={() => selectCornerStyle(option.name)}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="size-4 border-2 border-current"
-                    style={{ borderRadius: option.radius }}
-                  />
-                </Button>
-              </IconTooltip>
-            ))}
-          </div>
-        </section>
-      </PopoverContent>
-    </Popover>
+          Bordes
+        </h3>
+        <div className="flex gap-1" role="group" aria-label="Bordes">
+          {cornerStyles.map((option) => (
+            <IconTooltip key={option.name} label={option.label}>
+              <Button
+                type="button"
+                variant={cornerStyle === option.name ? "secondary" : "ghost"}
+                size="icon-sm"
+                aria-pressed={cornerStyle === option.name}
+                aria-label={option.label}
+                onClick={() => selectCornerStyle(option.name)}
+              >
+                <span
+                  aria-hidden="true"
+                  className="size-4 border-2 border-current"
+                  style={{ borderRadius: option.radius }}
+                />
+              </Button>
+            </IconTooltip>
+          ))}
+        </div>
+      </section>
+    </div>
   )
 }

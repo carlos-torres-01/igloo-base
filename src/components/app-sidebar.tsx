@@ -2,12 +2,11 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { House, LogOut, UserRound, UsersRound } from "lucide-react"
+import { House, UsersRound } from "lucide-react"
 import { BrandLogo } from "@/components/brand-logo"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -15,7 +14,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { logoutAction } from "@/features/auth/actions"
 import type { UserRole } from "@/types/profiles"
 
 const menuButtonTransitionClassName =
@@ -30,10 +28,7 @@ export function AppSidebar({ role }: { role: UserRole }) {
   if (role === "admin")
     navigation.push({ href: "/usuarios", label: "Usuarios", icon: UsersRound })
   return (
-    <Sidebar
-      collapsible="icon"
-      className="group-data-[side=left]:border-r-0"
-    >
+    <Sidebar collapsible="icon" className="group-data-[side=left]:border-r-0">
       <SidebarHeader className="px-4 py-5 group-data-[collapsible=icon]:px-2">
         <Link
           href="/inicio"
@@ -87,38 +82,6 @@ export function AppSidebar({ role }: { role: UserRole }) {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              className={menuButtonTransitionClassName}
-              render={<Link href="/cuenta" />}
-              aria-label="Mi cuenta"
-              aria-current={pathname === "/cuenta" ? "page" : undefined}
-              isActive={pathname === "/cuenta"}
-              tooltip="Mi cuenta"
-            >
-              <UserRound aria-hidden="true" />
-              <span className={menuLabelTransitionClassName}>Mi cuenta</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <form action={logoutAction}>
-              <SidebarMenuButton
-                className={menuButtonTransitionClassName}
-                type="submit"
-                aria-label="Cerrar sesión"
-                tooltip="Cerrar sesión"
-              >
-                <LogOut aria-hidden="true" />
-                <span className={menuLabelTransitionClassName}>
-                  Cerrar sesión
-                </span>
-              </SidebarMenuButton>
-            </form>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   )
 }

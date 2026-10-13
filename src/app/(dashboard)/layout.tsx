@@ -1,12 +1,10 @@
 import { AppSidebar } from "@/components/app-sidebar"
-import { AppearanceControl } from "@/components/appearance-control"
+import { AppearanceInitializer } from "@/components/appearance-control"
+import { SettingsControl } from "@/components/settings-control"
+import { NavigationTrigger } from "@/components/navigation-trigger"
 import { Reveal } from "@/components/motion/reveal"
 import { RouteTransition } from "@/components/motion/route-transition"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { requireUser } from "@/lib/auth"
 
 export default async function DashboardLayout({
@@ -25,11 +23,12 @@ export default async function DashboardLayout({
         >
           Saltar al contenido
         </a>
+        <AppearanceInitializer />
         <AppSidebar role={profile.role} />
         <SidebarInset>
           <div className="flex h-14 items-center justify-between px-4 md:px-6">
-            <SidebarTrigger aria-label="Alternar menú de navegación" />
-            <AppearanceControl />
+            <NavigationTrigger />
+            <SettingsControl />
           </div>
           <div
             id="contenido"
