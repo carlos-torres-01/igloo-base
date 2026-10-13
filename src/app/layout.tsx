@@ -43,6 +43,7 @@ export default function RootLayout({
         poppins.variable
       )}
       data-accent="violet"
+      data-density="normal"
     >
       <body className="min-h-svh">
         <ThemeProvider>

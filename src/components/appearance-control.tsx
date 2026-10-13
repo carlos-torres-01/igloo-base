@@ -2,8 +2,9 @@
 
 import { useEffect, useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
-import { Moon, Palette, Sun } from "lucide-react"
+import { Moon, Palette, Rows2, Rows3, Rows4, Sun } from "lucide-react"
 
+import { IconTooltip } from "@/components/icon-tooltip"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -23,11 +24,24 @@ const accents = [
 ] as const
 
 type AccentName = (typeof accents)[number]["name"]
+const densities = [
+  { name: "compact", label: "Compacto", icon: Rows4 },
+  { name: "normal", label: "Normal", icon: Rows3 },
+  { name: "spacious", label: "Amplio", icon: Rows2 },
+] as const
+
+type DensityName = (typeof densities)[number]["name"]
 const ACCENT_STORAGE_KEY = "igloo-accent"
 const ACCENT_CHANGE_EVENT = "igloo-accent-change"
+const DENSITY_STORAGE_KEY = "igloo-density"
+const DENSITY_CHANGE_EVENT = "igloo-density-change"
 
 function isAccentName(value: string | null | undefined): value is AccentName {
   return accents.some((accent) => accent.name === value)
+}
+
+function isDensityName(value: string | null | undefined): value is DensityName {
+  return densities.some((density) => density.name === value)
 }
 
 function getAccentSnapshot(): AccentName {
@@ -44,18 +58,45 @@ function notifyAccentChange() {
   window.dispatchEvent(new Event(ACCENT_CHANGE_EVENT))
 }
 
-function initializeAccent() {
-  const savedAccent = window.localStorage.getItem(ACCENT_STORAGE_KEY)
-  document.documentElement.dataset.accent = isAccentName(savedAccent)
-    ? savedAccent
-    : "violet"
-  notifyAccentChange()
-}
-
 function saveAccent(nextAccent: AccentName) {
   window.localStorage.setItem(ACCENT_STORAGE_KEY, nextAccent)
   document.documentElement.dataset.accent = nextAccent
   notifyAccentChange()
+}
+
+function getDensitySnapshot(): DensityName {
+  const currentDensity = document.documentElement.dataset.density
+  return isDensityName(currentDensity) ? currentDensity : "normal"
+}
+
+function subscribeToDensity(onChange: () => void) {
+  window.addEventListener(DENSITY_CHANGE_EVENT, onChange)
+  return () => window.removeEventListener(DENSITY_CHANGE_EVENT, onChange)
+}
+
+function notifyDensityChange() {
+  window.dispatchEvent(new Event(DENSITY_CHANGE_EVENT))
+}
+
+function initializeAppearance() {
+  const savedAccent = window.localStorage.getItem(ACCENT_STORAGE_KEY)
+  const savedDensity = window.localStorage.getItem(DENSITY_STORAGE_KEY)
+
+  document.documentElement.dataset.accent = isAccentName(savedAccent)
+    ? savedAccent
+    : "violet"
+  document.documentElement.dataset.density = isDensityName(savedDensity)
+    ? savedDensity
+    : "normal"
+
+  notifyAccentChange()
+  notifyDensityChange()
+}
+
+function saveDensity(nextDensity: DensityName) {
+  window.localStorage.setItem(DENSITY_STORAGE_KEY, nextDensity)
+  document.documentElement.dataset.density = nextDensity
+  notifyDensityChange()
 }
 
 export function AppearanceControl() {
@@ -65,13 +106,22 @@ export function AppearanceControl() {
     getAccentSnapshot,
     () => "violet"
   )
+  const density = useSyncExternalStore(
+    subscribeToDensity,
+    getDensitySnapshot,
+    () => "normal"
+  )
 
   useEffect(() => {
-    initializeAccent()
+    initializeAppearance()
   }, [])
 
   function selectAccent(nextAccent: AccentName) {
     saveAccent(nextAccent)
+  }
+
+  function selectDensity(nextDensity: DensityName) {
+    saveDensity(nextDensity)
   }
 
   return (
@@ -96,28 +146,30 @@ export function AppearanceControl() {
             Tema
           </h3>
           <div className="flex gap-1" role="group" aria-label="Tema">
-            <Button
-              type="button"
-              variant={resolvedTheme === "light" ? "secondary" : "ghost"}
-              size="icon-sm"
-              aria-pressed={resolvedTheme === "light"}
-              aria-label="Tema claro"
-              title="Tema claro"
-              onClick={() => setTheme("light")}
-            >
-              <Sun aria-hidden="true" />
-            </Button>
-            <Button
-              type="button"
-              variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
-              size="icon-sm"
-              aria-pressed={resolvedTheme === "dark"}
-              aria-label="Tema oscuro"
-              title="Tema oscuro"
-              onClick={() => setTheme("dark")}
-            >
-              <Moon aria-hidden="true" />
-            </Button>
+            <IconTooltip label="Claro">
+              <Button
+                type="button"
+                variant={resolvedTheme === "light" ? "secondary" : "ghost"}
+                size="icon-sm"
+                aria-pressed={resolvedTheme === "light"}
+                aria-label="Claro"
+                onClick={() => setTheme("light")}
+              >
+                <Sun aria-hidden="true" />
+              </Button>
+            </IconTooltip>
+            <IconTooltip label="Oscuro">
+              <Button
+                type="button"
+                variant={resolvedTheme === "dark" ? "secondary" : "ghost"}
+                size="icon-sm"
+                aria-pressed={resolvedTheme === "dark"}
+                aria-label="Oscuro"
+                onClick={() => setTheme("dark")}
+              >
+                <Moon aria-hidden="true" />
+              </Button>
+            </IconTooltip>
           </div>
         </section>
 
@@ -134,22 +186,50 @@ export function AppearanceControl() {
             aria-label="Color principal"
           >
             {accents.map((option) => (
-              <Button
-                key={option.name}
-                type="button"
-                variant={accent === option.name ? "secondary" : "ghost"}
-                size="icon-sm"
-                aria-pressed={accent === option.name}
-                aria-label={option.label}
-                title={option.label}
-                onClick={() => selectAccent(option.name)}
-              >
-                <span
-                  aria-hidden="true"
-                  className="size-5 rounded-full"
-                  style={{ backgroundColor: option.swatch }}
-                />
-              </Button>
+              <IconTooltip key={option.name} label={option.label}>
+                <Button
+                  type="button"
+                  variant={accent === option.name ? "secondary" : "ghost"}
+                  size="icon-sm"
+                  aria-pressed={accent === option.name}
+                  aria-label={option.label}
+                  onClick={() => selectAccent(option.name)}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="size-5 rounded-full"
+                    style={{ backgroundColor: option.swatch }}
+                  />
+                </Button>
+              </IconTooltip>
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="flex flex-col gap-2"
+          aria-labelledby="density-label"
+        >
+          <h3
+            id="density-label"
+            className="text-xs font-medium text-muted-foreground"
+          >
+            Espaciado
+          </h3>
+          <div className="flex gap-1" role="group" aria-label="Espaciado">
+            {densities.map((option) => (
+              <IconTooltip key={option.name} label={option.label}>
+                <Button
+                  type="button"
+                  variant={density === option.name ? "secondary" : "ghost"}
+                  size="icon-sm"
+                  aria-pressed={density === option.name}
+                  aria-label={option.label}
+                  onClick={() => selectDensity(option.name)}
+                >
+                  <option.icon aria-hidden="true" />
+                </Button>
+              </IconTooltip>
             ))}
           </div>
         </section>

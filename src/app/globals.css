@@ -83,6 +83,14 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+:root[data-density="compact"] {
+  --spacing: 0.225rem;
+}
+
+:root[data-density="spacious"] {
+  --spacing: 0.275rem;
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
